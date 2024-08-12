@@ -57,6 +57,17 @@ export class AuthService {
     }
   }
 
+  async getUser(token: string) {
+    try {
+      const user = this.jwtService.verify(token, {
+        secret: jwtConstants.secret,
+      });
+      return this.usersService.findById(user.sub);
+    } catch (e) {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
+
   generateRefreshToken(user: any) {
     const payload = { username: user.username, sub: user.id };
     return this.jwtService.sign(payload, {

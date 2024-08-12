@@ -6,6 +6,7 @@ import {
   Post,
   Headers,
   Put,
+  Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginRequest } from './dtos/login-request.dt';
@@ -48,5 +49,14 @@ export class AuthController {
   ) {
     const jwt = auth.replace('Bearer ', '');
     return this.authService.updateUser(jwt, user);
+  }
+
+  @ApiBearerAuth()
+  @Get('profils')
+  getUser(
+    @Headers('Authorization') auth: string,
+  ) {
+    const jwt = auth.replace('Bearer ', '');
+    return this.authService.getUser(jwt);
   }
 }

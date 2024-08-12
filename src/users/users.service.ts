@@ -35,4 +35,8 @@ export class UsersService {
     this.userRepository.update(updateUserDto as any, condition);
     return this.userRepository.findOne({ where: { id } });
   }
+
+  async findById(id: number) {
+    return this.userRepository.findOne({ where: { id } });
+  }
 }

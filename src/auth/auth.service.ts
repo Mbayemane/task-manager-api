@@ -1,4 +1,5 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { MailService } from 'src/mail.service';
 import { UsersService } from 'src/users/users.service';
 import { LoginRequest } from './dtos/login-request.dt';
 import { JwtService } from '@nestjs/jwt';
@@ -12,7 +13,10 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {}
+
+  private resetCodes = new Map();
 
   async register(user: RegisterRequestDto) {
     return this.usersService.create(user);
@@ -74,6 +78,28 @@ export class AuthService {
       secret: jwtConstants.secret,
       expiresIn: '7d', // Refresh token expires in 7 days
     });
+  }
+
+
+  async sendResetCode(email: string): Promise<void> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) throw new NotFoundException("Email introuvable");
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 15 * 60 * 1000);
+    this.resetCodes.set(email, { code, expires });
+    await this.mailService.sendResetCode(email, code);
+  }
+
+  async resetPassword(email: string, code: string, newPassword: string): Promise<void> {
+    const entry = this.resetCodes.get(email);
+    if (!entry) throw new UnauthorizedException("Code invalide");
+    if (new Date() > entry.expires) {
+      this.resetCodes.delete(email);
+      throw new UnauthorizedException("Code expire");
+    }
+    if (entry.code !== code) throw new UnauthorizedException("Code incorrect");
+    await this.usersService.updatePasswordByEmail(email, newPassword);
+    this.resetCodes.delete(email);
   }
 
   getJwt(user: any) {

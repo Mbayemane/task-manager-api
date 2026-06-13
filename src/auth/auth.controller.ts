@@ -7,6 +7,20 @@ import {
   Headers,
   Put,
   Get,
+
+  @HttpCode(HttpStatus.OK)
+  @Post('send-reset-code')
+  @Public()
+  sendResetCode(@Body() body: { email: string }) {
+    return this.authService.sendResetCode(body.email);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  @Public()
+  resetPassword(@Body() body: { email: string; code: string; newPassword: string }) {
+    return this.authService.resetPassword(body.email, body.code, body.newPassword);
+  }
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginRequest } from './dtos/login-request.dt';
@@ -60,3 +74,17 @@ export class AuthController {
     return this.authService.getUser(jwt);
   }
 }
+  @HttpCode(HttpStatus.OK)
+  @Post('send-reset-code')
+  @Public()
+  sendResetCode(@Body() body: { email: string }) {
+    return this.authService.sendResetCode(body.email);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  @Public()
+  resetPassword(@Body() body: { email: string; code: string; newPassword: string }) {
+    return this.authService.resetPassword(body.email, body.code, body.newPassword);
+  }
+

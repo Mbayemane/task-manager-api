@@ -113,3 +113,16 @@ export class AuthService {
     };
   }
 }
+
+  async sendResetCode(email: string) {
+    const user = await this.usersService.findOne(email);
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    this.resetCodes.set(email, { code, expires: Date.now() + 15 * 60 * 1000 });
+
+    await this.mailService.sendMail(email, code);
+
+    return { message: 'Code envoyé par email' };
+  }
+
